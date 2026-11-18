@@ -1,143 +1,87 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
-
-
-function Header(){
-  return <><header><h1>Заголовок страницы</h1></header></>
-}
-function MainContent(){
-   return <><main><p>основной контент</p><Section></Section></main>
-   </>
-}
-function Section(){
-  return <><section>
-    <h2>Заголовок секции</h2>
-    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Sunt nemo, nulla, illo repellendus sapiente expedita assumenda reprehenderit corporis obcaecati ea, debitis quaerat laboriosam autem animi iste id tempora temporibus excepturi!</p>
-    <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ab voluptatibus in rem neque eveniet soluta voluptate quibusdam est quas ipsum error laboriosam iste eius et, corrupti vitae nam facere perspiciatis?</p>
-    </section>
-  </>}
-
-function Footer(){return <><footer><h3>2026</h3></footer></>}
+import { useEffect, useState } from 'react';
+import './App.css';
+import { LanguageContext } from './MyContext';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [counter, setCount] = useState(0)
+  const [quantityOfDogs, setquantityOfDogs] = useState(3)
+  const [responseDogs, setresponseDogs] = useState([])
+  const [selectorBreed, setselectorBreed] = useState('')
+  const [arrOfKeys, setarrOfKeys] = useState([])
+  const [isLoading, setisLoading] = useState(true)
 
-  return (
-    <>
-    <Header></Header>
-    <MainContent></MainContent>
-    <Footer></Footer>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
 
-      <div className="ticks"></div>
+  useEffect(() => {
+    async function fetchBreed() {
+      try {
+        const response = await fetch(`https://dog.ceo/api/breeds/list/all`)
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        if (!response.ok) {
+          throw new Error('ошибка')
+        }
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+        const result = await response.json()
+        console.log(result);
+        setarrOfKeys(Object.keys(result.message))
+
+      } catch (err) {
+        console.log(err.message);
+      }
+    }
+    fetchBreed()
+  }, [])
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setisLoading(true)
+        const url = selectorBreed === ''
+  ? `https://dog.ceo/api/breeds/image/random/${quantityOfDogs}`
+  : `https://dog.ceo/api/breed/${selectorBreed}/images/random/${quantityOfDogs}`;
+        const response = await fetch(url)
+
+        if (!response.ok) {
+          throw new Error('ошибка')
+        }
+
+        const result = await response.json()
+        setresponseDogs(result.message)
+
+      } catch (err) {
+        console.log(err.message);
+
+      }
+      finally {
+        setisLoading(false)
+
+      }
+    }
+    fetchData()
+  }, [counter,selectorBreed])
+
+  const handleClick = () => setCount((prevNum) => prevNum + 1)
+  const handleChange = (e) => setquantityOfDogs(e.target.value)
+  const handleSelect = (e) => setselectorBreed(e.target.value)
+
+  return (<>
+    <h1 >Галерея собак</h1>
+    <p>Картинки обновлены <b>{counter} раз(а)</b></p>
+    <div>
+      <span>Показать</span>
+      <input type='number' onChange={handleChange} value={quantityOfDogs} min={1} max={50} />
+      <button onClick={handleClick}>Обновить</button>
+      <p>тут выведу значение инпута {quantityOfDogs}</p>
+      <select onChange={handleSelect} value={selectorBreed}>
+        <option value="">Все породы</option>
+        {arrOfKeys.map((item) => <option value={item} key={item}>{item}</option>)}
+      </select>
+    </div>
+    <div>
+      {isLoading ? <h3>Идет загрузка...</h3> : responseDogs.map((item) => <img alt='Собака' src={item} key={item} />)}
+    </div>
+  </>
   )
 }
 
 export default App
+
